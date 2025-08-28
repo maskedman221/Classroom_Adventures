@@ -1,39 +1,95 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 public class QuizManager : MonoBehaviour
 {
-    // UI References (TMP versions)
+    public static QuizManager Instance { get; private set; }
+    [Header("UI References")]
     [SerializeField] private TMP_Text questionText;
-    [SerializeField] private TMP_Text[] answerTexts; // Assign 4 TMP Text components
-    [SerializeField] private Button[] answerButtons;  // Assign 4 Buttons
+    [SerializeField] private TMP_Text[] answerTexts;
+    [SerializeField] private Button[] answerButtons;
     [SerializeField] private GameObject quizPanel;
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TMP_Text scoreText;
 
-    private List<ApiQuestionLoader.ProcessedQuestion> questions;
+    [Header("Quiz Settings")]
+    [SerializeField] private int gameModeId = 3; // The ID of the quiz game mode to load
+    [SerializeField] private GameObject winCanvas;
+    [SerializeField] private GameObject loseCanvas;
+    private List<QuizQuestionData> questions;
     private int currentQuestionIndex = 0;
     private int score = 0;
-
-    private async void Start()
-    {   
-        resultPanel.SetActive(false);
-        await InitializeQuiz();
-        ShowCurrentQuestion();
-    }
-
-    private async UniTask InitializeQuiz()
+    private float maxGamePlayingTime = 10f;
+    private float gamePlayingTimer;
+    public event EventHandler onStateChanged;
+    private enum State
     {
-        questions = await ApiQuestionLoader.Instance.LoadRandomizedQuestions();
-        if (questions == null || questions.Count == 0)
+        WaitingToStart,
+        CountdownTimer,
+        answerQuestion,
+        GameWin,
+        GameLose,
+    }
+    private State state;
+    private void Awake()
+    {
+        Instance = this;
+    }
+    private void Start()
+    {
+        resultPanel.SetActive(false);
+        LoadQuizData();
+        ShowCurrentQuestion();
+        state = State.WaitingToStart;
+    }
+    private void Update()
+    {
+        switch (state)
         {
-            Debug.LogError("Failed to load questions");
+            case State.WaitingToStart:
+                state = State.CountdownTimer;
+                gamePlayingTimer = maxGamePlayingTime;
+                onStateChanged?.Invoke(this, EventArgs.Empty);
+                break;
+            case State.CountdownTimer:
+                Debug.Log("quiz counting");
+                gamePlayingTimer -= Time.deltaTime;
+                if (gamePlayingTimer < 0f)
+                {
+                    state = State.answerQuestion;
+                    onStateChanged?.Invoke(this, EventArgs.Empty);
+                }
+                break;
+            case State.answerQuestion:
+                state = State.WaitingToStart;
+                onStateChanged?.Invoke(this, EventArgs.Empty);
+                break;
+            case State.GameWin:
+                winCanvas.SetActive(true);
+                onStateChanged?.Invoke(this, EventArgs.Empty);
+                break;
+            case State.GameLose:
+                loseCanvas.SetActive(true);
+                onStateChanged?.Invoke(this, EventArgs.Empty);
+                break;
+        }
+    }
+    private void LoadQuizData()
+    {
+        if (!QuizGameData.quizGames.ContainsKey(gameModeId) || QuizGameData.quizGames[gameModeId].Count == 0)
+        {
+            Debug.LogError("No questions found for gameModeId: " + gameModeId);
             quizPanel.SetActive(false);
             return;
         }
+
+        questions = new List<QuizQuestionData>(QuizGameData.quizGames[gameModeId]);
+        Debug.Log(questions.Count);
     }
 
     private void ShowCurrentQuestion()
@@ -43,18 +99,15 @@ public class QuizManager : MonoBehaviour
             EndQuiz();
             return;
         }
-
+        
         var currentQuestion = questions[currentQuestionIndex];
-        
-        // Set question text (TMP)
+
         questionText.text = currentQuestion.question;
-        
-        // Set answer texts (TMP) and button handlers
+
         for (int i = 0; i < answerButtons.Length; i++)
         {
-            answerTexts[i].text = currentQuestion.allAnswers[i];
-            
-            // Clear previous listeners and add new one
+            answerTexts[i].text = currentQuestion.choices[i];
+
             answerButtons[i].onClick.RemoveAllListeners();
             int answerIndex = i;
             answerButtons[i].onClick.AddListener(() => OnAnswerSelected(answerIndex));
@@ -63,30 +116,26 @@ public class QuizManager : MonoBehaviour
 
     private void OnAnswerSelected(int selectedIndex)
     {
-        bool isCorrect = selectedIndex == questions[currentQuestionIndex].correctAnswerIndex;
-        
+        var currentQuestion = questions[currentQuestionIndex];
+        bool isCorrect = selectedIndex == currentQuestion.correctOption;
+
         if (isCorrect)
         {
             score++;
-            Debug.Log("Correct!");
-            // Visual feedback (e.g., highlight correct answer green)
             answerButtons[selectedIndex].image.color = Color.green;
         }
         else
         {
-            Debug.Log("Incorrect!");
-            // Visual feedback (highlight wrong answer red and correct answer green)
             answerButtons[selectedIndex].image.color = Color.red;
-            answerButtons[questions[currentQuestionIndex].correctAnswerIndex].image.color = Color.green;
+            answerButtons[currentQuestion.correctOption].image.color = Color.green;
         }
 
-        // Move to next question after delay
         Invoke(nameof(LoadNextQuestion), 1.5f);
+        state = State.answerQuestion;
     }
 
     private void LoadNextQuestion()
     {
-        // Reset button colors
         foreach (var button in answerButtons)
         {
             button.image.color = HexToColor("#85A4A4");
@@ -96,39 +145,55 @@ public class QuizManager : MonoBehaviour
         ShowCurrentQuestion();
     }
 
-    private void EndQuiz()
+    private async void EndQuiz()
     {
         quizPanel.SetActive(false);
         resultPanel.SetActive(true);
         scoreText.text = $"{score}/{questions.Count}";
+        await UniTask.Delay(1500);
+        resultPanel.SetActive(false);
+        int totalQuestions = questions.Count;
+        float average = totalQuestions / 2f;
+        if (score > average)
+        {
+            state = State.GameWin;
+            onStateChanged?.Invoke(this, EventArgs.Empty);
+        }
+        else
+        {
+            state = State.GameLose;
+            onStateChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
-    public async void RestartQuiz()
+    public void RestartQuiz()
     {
         currentQuestionIndex = 0;
         score = 0;
-        
-        // Reset UI
+
         foreach (var button in answerButtons)
         {
             button.image.color = HexToColor("#85A4A4");
         }
-        
+
         resultPanel.SetActive(false);
         quizPanel.SetActive(true);
-        
-        await InitializeQuiz();
+
+        LoadQuizData();
         ShowCurrentQuestion();
     }
 
     private Color HexToColor(string hex)
-{
-    Color color = Color.white;
-    if (ColorUtility.TryParseHtmlString(hex, out color))
     {
-        return color;
+        if (ColorUtility.TryParseHtmlString(hex, out Color color))
+        {
+            return color;
+        }
+        Debug.LogWarning($"Invalid hex color: {hex}");
+        return Color.white;
     }
-    Debug.LogWarning($"Invalid hex color: {hex}");
-    return Color.white; // fallback
-}
+    public float GetGamePlayingTimerNormalize()
+    {
+        return 1 - (gamePlayingTimer / maxGamePlayingTime);
+    }
 }

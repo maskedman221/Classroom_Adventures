@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using System;
 public class TextContainer : MonoBehaviour
 {
     [SerializeField] private TextToVoice ttv;
@@ -15,7 +16,13 @@ public class TextContainer : MonoBehaviour
     }
     private void Start()
     {
+    ApiLessonsLoader.Instance.OnSentenceSet += HandleLessonUI;
+    }
+
+    private void HandleLessonUI(object sender, EventArgs e)
+{
     sentences = ApiLessonsLoader.Instance.getSentences();
+    index = 0; // reset index
 
     foreach (Transform child in textContainer)
     {
@@ -23,13 +30,19 @@ public class TextContainer : MonoBehaviour
             Destroy(child.gameObject);
     }
 
-    TMP_Text tmp = imageTextTemplate.GetComponentInChildren<TextMeshProUGUI>();
-    tmp.text = sentences[index];
-    imageTextTemplate.SetActive(true);
+    if (sentences.Count > 0)
+    {
+        TMP_Text tmp = imageTextTemplate.GetComponentInChildren<TextMeshProUGUI>();
+        tmp.text = sentences[index];
+        imageTextTemplate.SetActive(true);
 
-    ttv.OnAudioClipEnd += OnAudioClipEnd_PresentTheNextText;
+        ttv.OnAudioClipEnd += OnAudioClipEnd_PresentTheNextText;
     }
-
+    else
+    {
+        imageTextTemplate.SetActive(false);
+    }
+}
 
     private void OnAudioClipEnd_PresentTheNextText()
     {

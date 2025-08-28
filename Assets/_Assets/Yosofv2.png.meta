@@ -211,7 +211,9 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Yosofv2_0: 7229088859149052944
+      Yosofv2_1: 5798081032316858146
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

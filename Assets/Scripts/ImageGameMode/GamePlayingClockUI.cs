@@ -7,7 +7,15 @@ public class GamePlayingClockUI : MonoBehaviour
     [SerializeField] private Image timerImage;
 
     private void Update(){
+        
+        if (ImageGameManager.Instance != null)
+        {
         timerImage.fillAmount = ImageGameManager.Instance.GetGamePlayingTimerNormalize();
+        }
+         else if (QuizManager.Instance != null)
+        {
+        timerImage.fillAmount = QuizManager.Instance.GetGamePlayingTimerNormalize();
+        }
 
     }
 }

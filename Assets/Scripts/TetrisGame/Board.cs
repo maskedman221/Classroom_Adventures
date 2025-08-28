@@ -2,18 +2,20 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
-using System.Collections; // This provides IEnumerator
+using System.Collections;
+using System;// This provides IEnumerator
 
 // [DefaultExecutionOrder(-1)]
 public class Board : MonoBehaviour
 {
-    private Tilemap tilemap ;
+    public static Board Instance { private set; get; }
+    private Tilemap tilemap;
     private Piece activePiece ;
-
+    public event EventHandler OnGameOver;
     [SerializeField] private TetrominoData[] tetrominoes;
     private Vector2Int boardSize = new Vector2Int(8, 12);
     [SerializeField] private Vector3Int spawnPosition = new Vector3Int(-1, 4, 0);
-
+   
 public RectInt Bounds
     {
         get
@@ -25,6 +27,7 @@ public RectInt Bounds
 
     private void Awake()
     {
+        Instance = this;
         this.tilemap = GetComponentInChildren<Tilemap>();
         this.activePiece = GetComponentInChildren<Piece>();
 
@@ -46,16 +49,17 @@ public RectInt Bounds
         TetrisGameManager.Instance.SetPiece(activePiece,true);
     }
 
-public void GameOver()
-{
-    var renderer = tilemap.GetComponent<TilemapRenderer>();
-    renderer.enabled = false;
-    
-    tilemap.ClearAllTiles();
-    tilemap.CompressBounds();
-    
-    renderer.enabled = true;
-}
+    public void GameOver()
+    {
+        var renderer = tilemap.GetComponent<TilemapRenderer>();
+        renderer.enabled = false;
+
+        tilemap.ClearAllTiles();
+        tilemap.CompressBounds();
+
+        renderer.enabled = true;
+        OnGameOver?.Invoke(this, EventArgs.Empty);
+    }
 
     public void Set(Piece piece) {
         Vector3Int[] cells= piece.Getcells();

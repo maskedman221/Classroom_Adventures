@@ -8,50 +8,57 @@ public class ImageItem
     public string download_url;
 }
 
-public class ApiImageLoader : MonoBehaviour
+public class ApiImageLoader
 {
-    public static ApiImageLoader Instance { get; private set; }
-    private string apiUrl = "https://picsum.photos/v2/list";
-    private ImageItem[] images;
+    private string apiUrl = "http://localhost:8000/storage/";
+    private ImageItem[] correctImages;
+    private ImageItem[] wrongImages;
     
     // Add this property to check if loading is complete
     public bool IsInitialized { get; private set; } = false;
 
-    private void Awake()
-    {
-        Instance = this;
-    }
+    // private void Awake()
+    // {
+    //     Instance = this;
+    // }
 
-    private async UniTaskVoid Start()
-    {
-        await FetchImageUrl();
-        IsInitialized = true; // Mark as initialized when done
-    }
+    // private async UniTaskVoid Start()
+    // {
+    //     await FetchImageUrl();
+    //     IsInitialized = true; // Mark as initialized when done
+    // }
 
-    private async UniTask FetchImageUrl()
-    {
-        using UnityWebRequest request = UnityWebRequest.Get(apiUrl);
-        await request.SendWebRequest().ToUniTask();
-        
-        if (request.result == UnityWebRequest.Result.Success)
-        {
-            string json = request.downloadHandler.text;
-            images = JsonHelper.FromJson<ImageItem>(json);
-        }
-        else
-        {
-            Debug.LogError("Failed to fetch image list: " + request.error);
-        }
-    }
+    // private async UniTask FetchImageUrl()
+    // {
+    //     using UnityWebRequest request = UnityWebRequest.Get(apiUrl);
+    //     await request.SendWebRequest().ToUniTask();
 
-    public ImageItem[] GetFixedImageItem()
+    //     if (request.result == UnityWebRequest.Result.Success)
+    //     {
+    //         string json = request.downloadHandler.text;
+    //         images = JsonHelper.FromJson<ImageItem>(json);
+    //     }
+    //     else
+    //     {
+    //         Debug.LogError("Failed to fetch image list: " + request.error);
+    //     }
+    // }
+    // public void SetCorrectImages()
+    // {
+    //     this.correctImages = correctImages;
+    // }
+    public ImageItem[] GetFixedImageItemCorrect()
     {
-        return images;
+        return correctImages;
+    }
+    public ImageItem[] GetFixedImageItemWrong()
+    {
+        return wrongImages;
     }
     
     public async UniTask<Sprite> LoadSpriteFromUrl(string url)
     {
-        using UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
+        using UnityWebRequest request = UnityWebRequestTexture.GetTexture(apiUrl+url);
         await request.SendWebRequest().ToUniTask();
 
         if (request.result != UnityWebRequest.Result.Success)

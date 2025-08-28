@@ -186,7 +186,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      hillGrass_0: 7087812545025320457
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

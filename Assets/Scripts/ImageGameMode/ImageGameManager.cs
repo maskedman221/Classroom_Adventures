@@ -6,13 +6,16 @@ public class ImageGameManager : MonoBehaviour
 {
     public static ImageGameManager Instance {private set; get;}
     [SerializeField] private Canvas keyPadCanva;
-
+    [SerializeField] private GameObject winCanvas;
+    [SerializeField] private GameObject loseCanvas;
     public event EventHandler onStateChanged;
-
     private bool enterIsPressed;
     private bool isWin=false;
+    private int answer;
+    private int index = 0;
 
-    private enum State{
+    private enum State
+    {
         WaitingToStart,
         CountdownToStart,
         WaitingToCountImages,
@@ -83,12 +86,25 @@ public class ImageGameManager : MonoBehaviour
 
 
 
-    public void SetEnterIsPressed(bool pressed , bool win){
+    public void SetEnterIsPressed(bool pressed, int answer)
+    {
         enterIsPressed = pressed;
-        isWin = win;
-
+        this.answer = answer;
+        isWin = IsWin();
+        index++;
     }
-
+    private bool IsWin()
+    {
+        Debug.Log($"answer {answer}");
+        if (answer == ImageGameData.answers[index])
+        {
+            Debug.Log($"the Anwer is { ImageGameData.answers[index]}");
+            winCanvas.SetActive(true);
+            return true;
+        }
+        loseCanvas.SetActive(true);
+        return false;
+    }
     public float GetGamePlayingTimerNormalize(){
         return 1 - (gamePlayingTimer / maxGamePlayingTime);
     }

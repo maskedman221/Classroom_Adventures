@@ -6,8 +6,9 @@ public class ImageManager : MonoBehaviour
 {
     public static ImageManager Instance { get; private set; }
     private List<ImageCheckSO> imageCheckSOList;
-
-
+    private ApiImageLoader apiImageLoader = new ApiImageLoader();
+    private int numberofGames;
+    // private int index=0;
     public bool IsInitialized { get; private set; } = false;
     public Stopwatch apiCallStopwatch{get; private set;} 
     private void Awake()
@@ -18,36 +19,38 @@ public class ImageManager : MonoBehaviour
     }
 
     private async UniTaskVoid Start()
-    {   
+    {
         apiCallStopwatch.Start();
-        // Wait until ApiImageLoader is initialized
-        while (!ApiImageLoader.Instance.IsInitialized)
-        {
-            await UniTask.Yield();
-        }
+        // // Wait until ApiImageLoader is initialized
+        // while (!ApiImageLoader.Instance.IsInitialized)
+        // {
+        //     await UniTask.Yield();
+        // }
 
-        ImageItem[] images = ApiImageLoader.Instance.GetFixedImageItem();
+        string[] images = ImageGameData.AllImages[0];
         await LoadImageCheckSOList(images);
         apiCallStopwatch.Stop();
         IsInitialized = true;
+        
     }
-    private async UniTask LoadImageCheckSOList(ImageItem[] images)
+    private async UniTask LoadImageCheckSOList(string[] images)
     {
         var tasks = new List<UniTask>();
-
-        for (int i = 0; i < 10; i++) // or however many you need
+        if (images == null || images.Length == 0) return;
+        for (int i = 0; i < images.Length; i++)
         {
-            int index = i;
+            int index = i; // capture for async lambda
             tasks.Add(LoadAndAddImage(images[index]));
         }
 
-        await UniTask.WhenAll(tasks);
+        await UniTask.WhenAll(tasks);        
     }
 
-   private async UniTask LoadAndAddImage(ImageItem imageItem)
+
+   private async UniTask LoadAndAddImage(string imageItem)
 {
     ImageCheckSO imageCheckSO = new ImageCheckSO();
-    imageCheckSO.sprite = await ApiImageLoader.Instance.LoadSpriteFromUrl(imageItem.download_url);
+    imageCheckSO.sprite = await apiImageLoader.LoadSpriteFromUrl(imageItem);
     imageCheckSO.check = true;
     imageCheckSOList.Add(imageCheckSO);
 }

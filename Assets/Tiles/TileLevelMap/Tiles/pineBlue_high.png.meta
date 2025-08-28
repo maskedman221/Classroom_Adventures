@@ -186,7 +186,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      pineBlue_high_0: 7503368752073255715
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

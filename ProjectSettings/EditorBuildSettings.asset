@@ -11,6 +11,21 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/ImageGameMode.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: aeaa25e2e56aae74db2ebe7d5cfd5803
+  - enabled: 1
+    path: Assets/Scenes/LevelMap.unity
+    guid: d4d6029eed7351a44a8c3ec0b465b8fd
+  - enabled: 1
+    path: Assets/Scenes/LessonScene.unity
+    guid: 864a9629686081241af1d03bd6e17f05
+  - enabled: 1
+    path: Assets/Scenes/QuizGame.unity
+    guid: 75fb87893ca2ada479f650ef5ed08804
+  - enabled: 1
+    path: Assets/Scenes/TetrisGame.unity
+    guid: 34a308d5e1ab24a4ea754ccc20db3817
   m_configObjects:
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 3ae6832b9d83a8c40acce8551b488937, type: 2}
     com.unity.adaptiveperformance.samsung.android.provider_settings: {fileID: 11400000, guid: c58fd9a215698e146a38fceb7b956ae7, type: 2}

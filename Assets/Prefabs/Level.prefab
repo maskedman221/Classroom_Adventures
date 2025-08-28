@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3445023343837682851}
   - component: {fileID: 324452967516666384}
   - component: {fileID: 6413590347344490678}
-  - component: {fileID: 3967728766205575850}
+  - component: {fileID: 5619349669527341728}
   m_Layer: 0
   m_Name: Level
   m_TagString: Untagged
@@ -19,21 +19,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3445023343837682851
-Transform:
+--- !u!224 &3445023343837682851
+RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3731076175929998186}
-  serializedVersion: 2
   m_LocalRotation: {x: 0.33749598, y: -0, z: -0, w: 0.94132704}
-  m_LocalPosition: {x: 1.296, y: -3.238, z: -0.369}
+  m_LocalPosition: {x: 0, y: 0, z: -0.35806137}
   m_LocalScale: {x: 0.3, y: 0.3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 39.449, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 1.5543501, y: -0.93501353}
+  m_SizeDelta: {x: 1.6, y: 1.6}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &324452967516666384
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -125,7 +129,7 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.80000013
---- !u!114 &3967728766205575850
+--- !u!114 &5619349669527341728
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -134,7 +138,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 3731076175929998186}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3472fe4f46558de43a6fa28636a7c96d, type: 3}
+  m_Script: {fileID: 11500000, guid: 5dfc98b3b810072498737553abce4760, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   splinePoint: 0
+  stage_id: 0

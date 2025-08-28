@@ -1,8 +1,7 @@
 using UnityEngine;
-
+using System;
 public class Piece : MonoBehaviour
 {   
-
     private Board board;
     private TetrominoData data;
     private Vector3Int[] cells;
@@ -22,7 +21,7 @@ public class Piece : MonoBehaviour
     private bool rotateButton=false;
     private bool lockButton=false;
     private bool resetButton=false;
-
+    public event EventHandler OnPieceLock;
     public void Initialize(Board board,Vector3Int position ,TetrominoData data  ){
         this.data = data;
         this.board = board;
@@ -90,6 +89,7 @@ public class Piece : MonoBehaviour
         board.Set(this);
         // cells=null;
         TetrisGameManager.Instance.SetPiece(null , false);
+        OnPieceLock?.Invoke(this, EventArgs.Empty);
         Debug.Log(board.CheckNumberPatter('5'));
     }
 

@@ -8,6 +8,7 @@ public class ApiRegistration : MonoBehaviour
     private string baseUrl = "http://127.0.0.1:8000/api";
     private string endpointSignIn = "login";
     private string endpointSignUp = "register";
+    private string endpointPostChildren = "children";
 
     [System.Serializable]
     public class RegisterationResponse
@@ -70,6 +71,49 @@ public class ApiRegistration : MonoBehaviour
             else
             {
                 Debug.LogError("Sign-up failed: " + request.error);
+                return false;
+            }
+        }
+    }
+
+    public async UniTask<bool> CreatePlayerAccount(string name, string gradeLevel)
+    {
+        string childrenPostApi = $"{baseUrl}/{endpointPostChildren}";
+        WWWForm form = new WWWForm();
+        form.AddField("name", name);
+        form.AddField("grade_level", gradeLevel);
+        using (UnityWebRequest request = UnityWebRequest.Post(childrenPostApi, form))
+        {
+            string token = SecurePlayerPrefs.GetEncryptedString("auth_token");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                // ✅ Add Authorization header
+                request.SetRequestHeader("Authorization", $"Bearer {token}");
+            }
+            else
+            {
+                Debug.LogWarning("⚠ No token found in PlayerPrefs, request may fail.");
+            }
+            await request.SendWebRequest().ToUniTask();
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string json = request.downloadHandler.text;
+                try
+                {
+                    var parsed = JsonUtility.FromJson<RootResponse>(json); 
+                    string prettyJson = JsonUtility.ToJson(parsed, true); // true = pretty print
+                    Debug.Log("Response (JSON):\n" + prettyJson);
+                }
+                catch
+                {
+                    Debug.Log("Response (raw):\n" + json);
+                }
+                return true;
+            }
+            else
+            {
+                Debug.LogError("Creating Player failed: " + request.error);
                 return false;
             }
         }

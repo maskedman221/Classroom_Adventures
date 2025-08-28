@@ -16,11 +16,11 @@ public class ImageTable : MonoBehaviour
 
     private async UniTaskVoid Start()
     {
-        // Wait for ApiImageLoader to finish
-        while (ApiImageLoader.Instance == null || !ApiImageLoader.Instance.IsInitialized)
-        {
-            await UniTask.Yield();
-        }
+        // // Wait for ApiImageLoader to finish
+        // while (ApiImageLoader.Instance == null || !ApiImageLoader.Instance.IsInitialized)
+        // {
+        //     await UniTask.Yield();
+        // }
 
         // Wait for ImageManager to finish
         while (ImageManager.Instance == null || !ImageManager.Instance.IsInitialized)

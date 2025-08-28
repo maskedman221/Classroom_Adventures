@@ -186,7 +186,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      dark-blue-half-semi-circle-png-7017516945285466sgfeofrdw_0: 553368561960083732
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -5,9 +5,14 @@ using System.Collections;
 using System.Linq;
 public class KeypadController : MonoBehaviour
 {
+    public  static KeypadController Instance { private set; get; }
     [SerializeField] private TMP_InputField displayInputField; // Assign in Inspector
     private int numberOfImages;
-
+    private int answer;
+    private void Awake()
+    {
+        Instance = this;
+    }
     public void AppendKey(string key)
     {
         if (key == "BACK")
@@ -19,37 +24,34 @@ public class KeypadController : MonoBehaviour
         }
         else if (key == "ENTER")
         {
-           if (int.TryParse(GetInputText(), out numberOfImages))
-        {
-            int answer = ImageManager.Instance.GetImageCheckSOList().Count;
-            Debug.Log(answer );
-            Debug.Log(numberOfImages);
-            if (numberOfImages == answer)
+            if (int.TryParse(GetInputText(), out answer))
             {
-                ImageGameManager.Instance.SetEnterIsPressed(true, true);
+                numberOfImages = ImageManager.Instance.GetImageCheckSOList().Count;
+                Debug.Log(answer);
+                Debug.Log(numberOfImages);
+                
+                ImageGameManager.Instance.SetEnterIsPressed(true, answer);
+                
             }
             else
             {
-                ImageGameManager.Instance.SetEnterIsPressed(true, false);
+                Debug.LogWarning("Invalid input! Please enter a number.");
+                // Optionally reset input or show an error message
+                displayInputField.text = "";
             }
         }
         else
         {
-            Debug.LogWarning("Invalid input! Please enter a number.");
-            // Optionally reset input or show an error message
-            displayInputField.text = "";
+            displayInputField.text += key;
         }
     }
-    else
-    {
-        displayInputField.text += key;
-    }
-    }
     // Add to KeypadController.cs
+
+    
 public void ButtonPressed(Button button)
-{
-    StartCoroutine(ButtonAnimation(button));
-}
+    {
+        StartCoroutine(ButtonAnimation(button));
+    }
 
 private IEnumerator ButtonAnimation(Button button)
 {

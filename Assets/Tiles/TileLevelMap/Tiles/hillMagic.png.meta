@@ -186,7 +186,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      hillMagic_0: -4242434179424250564
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

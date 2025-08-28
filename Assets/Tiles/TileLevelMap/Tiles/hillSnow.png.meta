@@ -186,7 +186,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      hillSnow_0: -1935748906758170099
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

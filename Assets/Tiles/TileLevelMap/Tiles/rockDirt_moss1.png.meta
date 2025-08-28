@@ -186,7 +186,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      rockDirt_moss1_0: 7787992675901141178
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
