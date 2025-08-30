@@ -47,10 +47,21 @@ public class ChildSelectionScreen : MonoBehaviour
         // 5. Hook listener
         playButton.onClick.AddListener(() =>
         {
-            MapData.playerName = name;
-            MapData.playerGrade = grade_level;
-            MapData.current_stage_id = current_stage_id;
-            MapData.childId = childId;
+                    int[] stageArray;
+            if (current_stage_id == 1)
+                stageArray = new int[] { 1 };
+            else if (current_stage_id == 2)
+                stageArray = new int[] { 1, 2, 2 };
+            else if (current_stage_id == 3)
+                stageArray = new int[] { 1, 2, 3 };
+            else
+                stageArray = new int[] { };
+
+            MapDataManager.Instance.Data.current_stage_id = stageArray;
+            MapDataManager.Instance.Data.playerName = name;
+            MapDataManager.Instance.Data.playerGrade = grade_level;
+            MapDataManager.Instance.Data.childId = childId;
+            MapDataManager.Instance.Data.openSelectionChild = false;
             SceneManager.LoadScene(3); // or use build index
         });
     }
@@ -61,7 +72,7 @@ public class ChildSelectionScreen : MonoBehaviour
     }
     // private void goToMapScreen()
     // {
-    //     MapData.playerName = 
+    //     MapDataManager.Instance.Data.playerName = 
     //     SceneManager.LoadScene(3); 
     // }
 }

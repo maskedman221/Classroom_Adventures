@@ -35,15 +35,15 @@ public class LessonManager : MonoBehaviour
     if (index >= LessonsData.descriptions.Count)
     {
         // reached the end
-        if (MapData.gamemode == "PHOTO")
+        if (MapDataManager.Instance.Data.gamemode == "PHOTO")
         {
             SceneManager.LoadScene(1);
         }
-        if (MapData.gamemode == "MATH")
+        if (MapDataManager.Instance.Data.gamemode == "MATH")
         {
             SceneManager.LoadScene(6);
         }
-        if (MapData.gamemode == "QUIZ")
+        if (MapDataManager.Instance.Data.gamemode == "QUIZ")
         {
             SceneManager.LoadScene(5);
         }

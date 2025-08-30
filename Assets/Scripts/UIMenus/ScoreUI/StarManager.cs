@@ -4,14 +4,15 @@ using UnityEngine;
 public class WellDoneScreenManager : MonoBehaviour
 {
     [SerializeField] Star[] Stars;
- 
     [SerializeField] float EnlargeScale = 1.5f;
     [SerializeField] float ShrinkScale = 1f;
     [SerializeField] float EnlargeDuration = 0.25f;
     [SerializeField] float ShrinkDuration = 0.25f;
+    [SerializeField] int starsScore;
     void Start()
     {
-        ShowStars(5);
+        Debug.Log($"Score is {Score.GetScore()}");
+        ShowStars(Score.GetScore());
     }
  
     public void ShowStars(int numberOfStars)

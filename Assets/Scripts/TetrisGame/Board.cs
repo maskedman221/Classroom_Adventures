@@ -68,34 +68,61 @@ public RectInt Bounds
         tilemap.SetTile(tilePosition, piece.GetTetrominoData().tile);
     }
 }
-    public void Clear(Piece piece) {
-    for (int i = 0; i < piece.Getcells().Length; i++) {
-        Vector3Int tilePosition = piece.Getcells()[i] + piece.Getposition();
-        tilemap.SetTile(tilePosition, null);
+        public void Clear(Piece piece)
+    {
+        for (int i = 0; i < piece.Getcells().Length; i++) {
+            Vector3Int tilePosition = piece.Getcells()[i] + piece.Getposition();
+            tilemap.SetTile(tilePosition, null);
+        }
     }
-}
+    public void ClearBoardInstantly()
+    {
+        if (tilemap == null) return;
 
-   public bool IsValidPosition(Piece piece, Vector3Int position) {
-    RectInt bounds = Bounds;
+        // Remove all tiles from the tilemap
+        tilemap.ClearAllTiles();
 
-    for (int i = 0; i < piece.Getcells().Length; i++) {
-        // Calculate the position in Unity's tile grid (scaled by 0.5)
-        Vector3Int tilePosition = piece.Getcells()[i] + position;
+        // Reset active piece reference
+        if (activePiece != null)
+        {
+            activePiece = null;
+        }
 
-        // Check bounds (scaled for 0.5 cell size)
-        if (!bounds.Contains((Vector2Int)tilePosition)) {
-            Debug.Log($"Out of bounds at: {tilePosition}");
-            return false;
-        }       
-        
-        if (tilemap.HasTile(tilePosition)) {
-            Debug.Log($"Tile exists at: {tilePosition}");
+        // Optionally compress the bounds
+        tilemap.CompressBounds();
+
+        Debug.Log("Board cleared instantly.");
+    }
+    public void ClearAllPieces()
+    {
+        tilemap.ClearAllTiles();
+    }
+    
+   public bool IsValidPosition(Piece piece, Vector3Int position)
+    {
+        RectInt bounds = Bounds;
+
+        for (int i = 0; i < piece.Getcells().Length; i++)
+        {
+            // Calculate the position in Unity's tile grid (scaled by 0.5)
+            Vector3Int tilePosition = piece.Getcells()[i] + position;
+
+            // Check bounds (scaled for 0.5 cell size)
+            if (!bounds.Contains((Vector2Int)tilePosition))
+            {
+                Debug.Log($"Out of bounds at: {tilePosition}");
                 return false;
             }
-     
+
+            if (tilemap.HasTile(tilePosition))
+            {
+                Debug.Log($"Tile exists at: {tilePosition}");
+                return false;
+            }
+
+        }
+        return true;
     }
-    return true;
-}
 
 public bool CheckNumberPatter(char number){
     RectInt bounds = Bounds;

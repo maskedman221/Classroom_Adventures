@@ -2,64 +2,89 @@ using UnityEngine;
 using System;
 using TMPro;
 using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
 
 public class TetrisGameManager : MonoBehaviour
 {
     public static TetrisGameManager Instance { get; private set; }
+
+    [Header("UI References")]
     [SerializeField] private GameObject winCanvas;
     [SerializeField] private GameObject loseCanvas;
-    public event EventHandler onStateChanged;
-    private bool pieceSpawned = false;
     [SerializeField] private TextMeshProUGUI question;
-    private string answer;
+
+    public event EventHandler onStateChanged;
+    public ApiGetLoader api = new ApiGetLoader();
+    private bool pieceSpawned = false;
     private Piece piece;
+    private bool handlingProblem = false;
     private enum State
     {
-        pieceIsFalling,
-        noPiece,
-        win,
-        lose
+        WaitingToStart,
+        GamePlaying,
+        GameWin,
+        GameOver
     }
 
     private State state;
 
+    // Multiple problems
+    private List<MathProblemData> problems = new List<MathProblemData>();
+    private int currentProblemIndex = 0;
+
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
-        state = State.noPiece;
+        state = State.WaitingToStart;
+
+        if (winCanvas != null) winCanvas.SetActive(false);
+        if (loseCanvas != null) loseCanvas.SetActive(false);
     }
+
     private void Start()
     {
-        if (MathGameData.mathGames.TryGetValue(1, out MathProblemData mathData))
+        // Load problems
+        if (MathGameData.mathGamesList.TryGetValue(2, out List<MathProblemData> mathProblemList))
         {
-            question.text = mathData.question;
-            answer = mathData.answer;
+            problems = mathProblemList;
         }
+        else
+        {
+            Debug.LogError("[TetrisGameManager] No math problems found!");
+        }
+
+        Score.countGames = problems.Count;
+
+        ShowCurrentProblem();
+
         Board.Instance.OnGameOver += Lose;
     }
+
     private void Update()
     {
         switch (state)
         {
-            case State.noPiece:
-                if (pieceSpawned)
-                    state = State.pieceIsFalling;
+            case State.WaitingToStart:
+                if (pieceSpawned) state = State.GamePlaying;
                 onStateChanged?.Invoke(this, EventArgs.Empty);
                 break;
 
-            case State.pieceIsFalling:
-                piece.UpdateMovment();
-                if (!pieceSpawned)
-                    state = State.noPiece;
+            case State.GamePlaying:
+                if (piece != null) piece.UpdateMovment();
+                if (!pieceSpawned) state = State.WaitingToStart;
                 onStateChanged?.Invoke(this, EventArgs.Empty);
                 break;
-            case State.win:
 
+            case State.GameWin:
                 break;
-            case State.lose:
-
+            case State.GameOver:
                 break;
-
         }
     }
 
@@ -68,43 +93,95 @@ public class TetrisGameManager : MonoBehaviour
         this.piece = piece;
         this.pieceSpawned = pieceSpawned;
         if (piece != null)
-        piece.OnPieceLock += HandlePieceLocked;
+            piece.OnPieceLock += HandlePieceLocked;
     }
-    private void HandlePieceLocked(object sender, EventArgs e)
-    {
+
+private async void HandlePieceLocked(object sender, EventArgs e)
+{
+    if (IsCompleted()) return;
+    if (handlingProblem) return; // prevent double processing
+
+    handlingProblem = true;
+
+    string answer = problems[currentProblemIndex].answer;
+    bool problemCompleted = true;
+
+    // check all characters for the current problem
     foreach (char c in answer)
     {
-        if (Board.Instance.CheckNumberPatter(c))
+        if (!Board.Instance.CheckNumberPatter(c))
         {
-            Won();
-            return;
+            problemCompleted = false;
+            break;
         }
     }
-    }
-    private async void Won()
+
+    if (problemCompleted)
     {
-        state = State.win;
-        if (!string.IsNullOrEmpty(question.text) && !string.IsNullOrEmpty(answer))
+        Score.gotIt++;
+        await UniTask.Delay(TimeSpan.FromSeconds(0.5f));
+
+        // clear the board for the next problem
+        Board.Instance.ClearAllPieces();
+
+        // move to next problem
+        currentProblemIndex++;
+
+        if (IsCompleted())
         {
-        // If last character is '?', replace it
-        if (question.text.EndsWith("?"))
-        {
-            question.text = question.text.Substring(0, question.text.Length - 1) + answer;
+            FinishGame(); // only after last problem
         }
         else
         {
-            // fallback: just append
-            question.text += answer;
+            ShowCurrentProblem();
+            state = State.WaitingToStart; // or a “CountdownToStart” state if needed
         }
+    }
+
+    handlingProblem = false;
+}
+
+
+    private async void FinishGame()
+    {
+        if (Score.GetScore() > 0)
+        {
+            int? current_stage_id = await api.UpdateChildProgress(MapDataManager.Instance.Data.childId,MapDataManager.Instance.Data.order,Score.GetScore());
+            if (current_stage_id.HasValue)
+            {
+                MapDataManager.Instance.Data.current_stage_id[1] = current_stage_id.Value;
+                Debug.Log("Updated current_stage_id: " + MapDataManager.Instance.Data.current_stage_id[MapDataManager.Instance.Data.order-1]);
+            }
+            Debug.Log(MapDataManager.Instance.Data.current_stage_id[MapDataManager.Instance.Data.order-1]);
+            if (winCanvas != null) winCanvas.SetActive(true);
+            state = State.GameWin;
         }
-        await UniTask.Delay(TimeSpan.FromSeconds(1));
-        winCanvas.SetActive(true);
+        else
+        {
+            if (loseCanvas != null) loseCanvas.SetActive(true);
+            state = State.GameOver;
+        }
+
         onStateChanged?.Invoke(this, EventArgs.Empty);
     }
+
     private void Lose(object sender, EventArgs e)
     {
-        state = State.lose;
-        loseCanvas.SetActive(true);
+        state = State.GameOver;
+        if (loseCanvas != null) loseCanvas.SetActive(true);
         onStateChanged?.Invoke(this, EventArgs.Empty);
-    } 
+    }
+
+    private void ShowCurrentProblem()
+    {
+        if (!IsCompleted())
+        {
+            question.text = problems[currentProblemIndex].question;
+        }
+    }
+
+    public bool IsCompleted()
+    {
+        return currentProblemIndex >= problems.Count;
+    }
 }

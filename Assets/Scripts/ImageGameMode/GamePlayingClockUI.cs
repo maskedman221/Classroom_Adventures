@@ -10,7 +10,7 @@ public class GamePlayingClockUI : MonoBehaviour
         
         if (ImageGameManager.Instance != null)
         {
-        timerImage.fillAmount = ImageGameManager.Instance.GetGamePlayingTimerNormalize();
+        timerImage.fillAmount = ImageGameManager.Instance.GetGamePlayingTimerNormalized();
         }
          else if (QuizManager.Instance != null)
         {

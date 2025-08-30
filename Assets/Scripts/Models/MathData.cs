@@ -2,7 +2,8 @@ using System.Collections.Generic;
 
 public static class MathGameData
 {
-    public static Dictionary<int, MathProblemData> mathGames = new Dictionary<int, MathProblemData>();
+    // Each gameModeId maps to a LIST of problems
+    public static Dictionary<int, List<MathProblemData>> mathGamesList = new Dictionary<int, List<MathProblemData>>();
 }
 
 [System.Serializable]

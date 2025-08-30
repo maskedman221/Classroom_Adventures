@@ -31,7 +31,7 @@ public class KeypadController : MonoBehaviour
                 Debug.Log(numberOfImages);
                 
                 ImageGameManager.Instance.SetEnterIsPressed(true, answer);
-                
+                displayInputField.text = "";
             }
             else
             {

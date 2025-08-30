@@ -6,15 +6,26 @@ public class Player : MonoBehaviour
 {
     public static Player Instance { get; private set; }
     [SerializeField] private SplineContainer splineContainer;
-    // [Range(0f, 1f)][SerializeField] private float t = 0f;
     [SerializeField] private float speed = 0.2f;
     private float currentTarget;
     private float target;
     private bool isMoving = false;
     public event EventHandler OnDestinationReached;
+
     private void Awake()
     {
         Instance = this;
+
+        // Start player at beginning of the spline and upright
+        if (splineContainer != null)
+        {
+            Vector3 startPos = splineContainer.EvaluatePosition(0f);
+            startPos.z = 0;
+            transform.position = startPos;
+            transform.rotation = Quaternion.identity;
+            currentTarget = 0f;
+            target = 0f;
+        }
     }
 
     void Update()
@@ -26,14 +37,15 @@ public class Player : MonoBehaviour
         pos.z = 0;
         transform.position = pos;
 
+        // Keep player upright
+        transform.rotation = Quaternion.identity;
+
         if (Mathf.Approximately(currentTarget, target))
         {
             isMoving = false;
             Debug.Log("Player reached destination");
             OnDestinationReached?.Invoke(this, EventArgs.Empty);
         }
-
-       
     }
 
     public void MoveTo(float target)

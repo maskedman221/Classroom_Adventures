@@ -60,7 +60,7 @@ public class Piece : MonoBehaviour
             lockButton=false;
         }
         if(resetButton){
-            board.GameOver();
+            board.ClearAllPieces();
             resetButton=false;
         }
         // Advance the piece to the next row every x seconds

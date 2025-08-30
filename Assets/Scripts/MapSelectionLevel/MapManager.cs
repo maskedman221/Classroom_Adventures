@@ -4,13 +4,14 @@ using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
 using System;
 using System.Linq;
-
+using UnityEngine.UI;
 public class MapManager : MonoBehaviour
 {
     public static MapManager Instance { get; private set; }
     [SerializeField] private Player player;
     [SerializeField] private int childId = 1;
     [SerializeField] private Transform mapLevels;
+    [SerializeField] private Button exitButton;
     private ApiGetLoader api = new ApiGetLoader();
     public event EventHandler OnStageIdFilled;
 
@@ -20,7 +21,7 @@ public class MapManager : MonoBehaviour
     }
     private async void Start()
     {
-        childId = MapData.childId;
+        childId = MapDataManager.Instance.Data.childId;
         if (LoadingManager.Instance == null)
         {
             Debug.LogError("❌ LoadingManager.Instance is null!");
@@ -32,11 +33,10 @@ public class MapManager : MonoBehaviour
         {
             foreach (var stage in map.data.stages)
             {
-                MapData.stage_id.Add(stage.id);
-                Debug.Log(MapData.stage_id[0]);
+                MapDataManager.Instance.Data.stages.Add(stage);
+                Debug.Log(MapDataManager.Instance.Data.stages[0].id);
             }
             Debug.Log($"✅ Map loaded with {map.data.stages.Length} stages");
-            // TODO: setup your stages/levels here
         }
         else
         {
@@ -45,6 +45,7 @@ public class MapManager : MonoBehaviour
         Player.Instance.OnDestinationReached += OnDestinationReached_OpenLesson;
         OnStageIdFilled?.Invoke(this, EventArgs.Empty);
         AssignStageIdsToLevels();
+        exitButton.onClick.AddListener(() => ExitMap());
     }
     private void Update()
     {
@@ -72,30 +73,39 @@ public class MapManager : MonoBehaviour
         if (raycastHit.collider != null)
         {
             LevelTarget level = raycastHit.collider.GetComponent<LevelTarget>();
-            Debug.Log("Hit object: " + raycastHit.collider.gameObject.name);
-            Debug.Log("Clicked on level, moving player...");
-            player.MoveTo(level.GetSplinePoint());
+            Debug.Log("Current stage IDs: " + string.Join(", ", MapDataManager.Instance.Data.current_stage_id));
+            if (MapDataManager.Instance.Data.current_stage_id.Any(stageId => stageId == level.GetOrder()))
+            {
+                Debug.Log("Hit object: " + raycastHit.collider.gameObject.name);
+                Debug.Log("Clicked on level, moving player...");
+                player.MoveTo(level.GetSplinePoint());
+            }
+            else
+            {
+                Debug.Log("Unable To access this Stage");
+            }
         }
     }
     private void AssignStageIdsToLevels()
-{
-    if (mapLevels == null)
     {
-        Debug.LogError("❌ mapLevels parent is not assigned!");
-        return;
+        if (mapLevels == null)
+        {
+            Debug.LogError("❌ mapLevels parent is not assigned!");
+            return;
+        }
+        LevelTarget[] targets = mapLevels.GetComponentsInChildren<LevelTarget>();
+        targets = targets.OrderBy(t => t.transform.GetSiblingIndex()).ToArray();
+        for (int i = 0; i < targets.Length && i < MapDataManager.Instance.Data.stages.Count; i++)
+        {
+            targets[i].SetStageId(MapDataManager.Instance.Data.stages[i].id);
+            targets[i].SetStageOrder(MapDataManager.Instance.Data.stages[i].order);
+            Debug.Log($"Assigned Stage ID {MapDataManager.Instance.Data.stages[i].id} to {targets[i].name}");
+        }
     }
-
-    // Get all LevelTargets under the parent
-    LevelTarget[] targets = mapLevels.GetComponentsInChildren<LevelTarget>();
-
-    // Sort by hierarchy order so the order is predictable
-    targets = targets.OrderBy(t => t.transform.GetSiblingIndex()).ToArray();
-
-    // Assign stage IDs
-    for (int i = 0; i < targets.Length && i < MapData.stage_id.Count; i++)
+    private void ExitMap()
     {
-        targets[i].SetStageId(MapData.stage_id[i]);
-        Debug.Log($"Assigned Stage ID {MapData.stage_id[i]} to {targets[i].name}");
+        Debug.Log("Exit button clicked ✅");
+        MapDataManager.Instance.SetChildId(0);
+        SceneManager.LoadScene(2);
     }
-}
 }

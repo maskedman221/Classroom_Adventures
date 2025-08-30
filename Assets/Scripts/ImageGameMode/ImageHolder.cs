@@ -7,7 +7,7 @@ public class ImageHolder : MonoBehaviour
 
 
 private void Update(){
-  if(ImageGameManager.Instance.GetisGamePlaying()){
+  if(ImageGameManager.Instance.GetIsGamePlaying()){
     image.gameObject.SetActive(false);
   }
 }

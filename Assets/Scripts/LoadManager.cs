@@ -22,7 +22,7 @@ public class LoadingManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // Spawn UI at startup, keep it hidden
+        
         ui = Instantiate(loadingUIPrefab, transform);
         ui.gameObject.SetActive(false);
     }
@@ -45,12 +45,12 @@ public class LoadingManager : MonoBehaviour
             ui.SetProgress(progress);
     }
 
-    /// Run any async task wrapped with loading overlay
+    
 public async UniTask<T> RunWithLoading<T>(Func<UniTask<T>> taskFunc)
 {
     Show(0.05f);
 
-    T result = await taskFunc(); // run your API task
+    T result = await taskFunc();
 
     SetProgress(1f);
     await Hide(0.2f);
@@ -58,8 +58,6 @@ public async UniTask<T> RunWithLoading<T>(Func<UniTask<T>> taskFunc)
     return result;
 }
 
-
-    /// Simple GET request with loading overlay
     public async UniTask<string> GetJson(string url)
     {
         Show(0.05f);

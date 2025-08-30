@@ -28,6 +28,7 @@ public class PhotoEntry
     public string[] correct_images;
     public string[] wrong_images;
     public int answer;
+    public string question;
     public string created_at;
     public string updated_at;
 

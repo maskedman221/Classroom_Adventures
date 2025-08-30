@@ -86,6 +86,7 @@ MonoBehaviour:
   ShrinkScale: 1
   EnlargeDuration: 0.25
   ShrinkDuration: 0.25
+  starsScore: 0
 --- !u!1 &3273226245237132178
 GameObject:
   m_ObjectHideFlags: 0
@@ -199,6 +200,7 @@ GameObject:
   - component: {fileID: 1564065156135031135}
   - component: {fileID: 7969298568950801094}
   - component: {fileID: 8589734141710360161}
+  - component: {fileID: 4744697927499661845}
   m_Layer: 5
   m_Name: Background
   m_TagString: Untagged
@@ -266,6 +268,19 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4744697927499661845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4680752034129462253}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ff0569c49b05c74494aa83aaa062fc3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneIndex: 3
 --- !u!1 &6610388780789974824
 GameObject:
   m_ObjectHideFlags: 0
@@ -522,7 +537,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4953760899732502179}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4744697927499661845}
+        m_TargetAssemblyTypeName: ExitButton, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &7330598829303286505
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
-
+using UnityEngine.SceneManagement;
 public class StageManager : MonoBehaviour
 {
     public static StageManager Instance { get; private set; }
@@ -14,8 +14,8 @@ public class StageManager : MonoBehaviour
 
     private async void Start()
     {
-        Debug.Log($"MapData.idClicked{MapData.idClicked}");
-        var response = await LoadingManager.Instance.RunWithLoading(() => api.GetStage(MapData.idClicked));
+        Debug.Log($"MapDataManager.Instance.Data.idClicked{MapDataManager.Instance.Data.idClicked}");
+        var response = await LoadingManager.Instance.RunWithLoading(() => api.GetStage(MapDataManager.Instance.Data.idClicked));
         foreach (var lesson in response.lessons)
         {
             LessonsData.titles.Add(lesson.title);
@@ -28,7 +28,8 @@ public class StageManager : MonoBehaviour
             GameModeType type = gm.GetActiveModeType();
             if (type == GameModeType.PHOTO)
             {
-                MapData.gamemode = "PHOTO";
+                MapDataManager.Instance.Data.gamemode = "PHOTO";
+                int gameModeId = gm.id; 
                 for (int i = 0; i < response.game_modes[0].photo_entries.Length; i++)
                 {
                     string[] array1 = response.game_modes[0].photo_entries[i].correct_images;
@@ -38,22 +39,33 @@ public class StageManager : MonoBehaviour
                     array1.CopyTo(combinedArray, 0);
                     array2.CopyTo(combinedArray, array1.Length);
                     string[] shuffledArray = ShuffleArray(combinedArray);
-                    ImageGameData.answers.Add(response.game_modes[0].photo_entries[i].answer);
-                    ImageGameData.AllImages.Add(shuffledArray);
+                     ImageGameData.AddProblem(
+                        gameModeId,
+                        new ImageProblemData(response.game_modes[0].photo_entries[i].question,shuffledArray, response.game_modes[0].photo_entries[i].answer)
+                    );
                 }
             }
             if (type == GameModeType.MATH)
             {
-                MapData.gamemode = "MATH";
+                MapDataManager.Instance.Data.gamemode = "MATH";
+                int gameModeId = gm.id;
+                if (!MathGameData.mathGamesList.ContainsKey(gameModeId))
+                {
+                    MathGameData.mathGamesList[gameModeId] = new List<MathProblemData>();
+                }
                 for (int i = 0; i < response.game_modes[0].math_problems.Length; i++)
                 {
-                    MathGameData.mathGames[response.game_modes[0].math_problems[i].id] =
-                    new MathProblemData(response.game_modes[0].math_problems[i].question, response.game_modes[0].math_problems[i].answer);
+                    MathGameData.mathGamesList[gameModeId].Add(
+                        new MathProblemData(
+                        gm.math_problems[i].question,
+                        gm.math_problems[i].answer
+                        )
+                    );
                 }
             }
             if (type == GameModeType.QUIZ)
             {
-                MapData.gamemode = "QUIZ";
+                MapDataManager.Instance.Data.gamemode = "QUIZ";
                 for (int i = 0; i < response.game_modes[0].quiz_questions.Length; i++)
                 {
                     Debug.Log(response.game_modes[0].quiz_questions.Length);

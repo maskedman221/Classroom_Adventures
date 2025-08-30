@@ -26,6 +26,7 @@ public class QuizManager : MonoBehaviour
     private int score = 0;
     private float maxGamePlayingTime = 10f;
     private float gamePlayingTimer;
+    public ApiGetLoader api = new ApiGetLoader();
     public event EventHandler onStateChanged;
     private enum State
     {
@@ -96,6 +97,7 @@ public class QuizManager : MonoBehaviour
     {
         if (currentQuestionIndex >= questions.Count)
         {
+            Score.countGames = questions.Count;
             EndQuiz();
             return;
         }
@@ -122,6 +124,7 @@ public class QuizManager : MonoBehaviour
         if (isCorrect)
         {
             score++;
+            Score.gotIt++;
             answerButtons[selectedIndex].image.color = Color.green;
         }
         else
@@ -154,8 +157,15 @@ public class QuizManager : MonoBehaviour
         resultPanel.SetActive(false);
         int totalQuestions = questions.Count;
         float average = totalQuestions / 2f;
-        if (score > average)
+        if (Score.GetScore() > 0)  // assuming you implemented GetScore() as discussed
         {
+            int? current_stage_id = await api.UpdateChildProgress(MapDataManager.Instance.Data.childId, MapDataManager.Instance.Data.order, Score.GetScore());
+            if (current_stage_id.HasValue)
+            {
+                MapDataManager.Instance.Data.current_stage_id[2] = current_stage_id.Value;
+                Debug.Log("Updated current_stage_id: " + MapDataManager.Instance.Data.current_stage_id[MapDataManager.Instance.Data.order-1]);
+            }
+            Debug.Log(MapDataManager.Instance.Data.current_stage_id[MapDataManager.Instance.Data.order-1]);
             state = State.GameWin;
             onStateChanged?.Invoke(this, EventArgs.Empty);
         }

@@ -7,7 +7,7 @@ static class LoadingBootstrap
     {
         if (LoadingManager.Instance != null) return;
 
-        var prefab = Resources.Load<LoadingManager>("LoadingManager"); // make sure prefab is in Resources/
+        var prefab = Resources.Load<LoadingManager>("LoadingManager");
         if (prefab != null)
             Object.Instantiate(prefab);
         else
