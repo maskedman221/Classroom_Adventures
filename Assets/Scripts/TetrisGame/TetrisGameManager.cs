@@ -18,6 +18,7 @@ public class TetrisGameManager : MonoBehaviour
     private bool pieceSpawned = false;
     private Piece piece;
     private bool handlingProblem = false;
+
     private enum State
     {
         WaitingToStart,
@@ -28,7 +29,6 @@ public class TetrisGameManager : MonoBehaviour
 
     private State state;
 
-    // Multiple problems
     private List<MathProblemData> problems = new List<MathProblemData>();
     private int currentProblemIndex = 0;
 
@@ -49,7 +49,6 @@ public class TetrisGameManager : MonoBehaviour
 
     private void Start()
     {
-        // Load problems
         if (MathGameData.mathGamesList.TryGetValue(2, out List<MathProblemData> mathProblemList))
         {
             problems = mathProblemList;
@@ -82,7 +81,6 @@ public class TetrisGameManager : MonoBehaviour
                 break;
 
             case State.GameWin:
-                break;
             case State.GameOver:
                 break;
         }
@@ -96,63 +94,81 @@ public class TetrisGameManager : MonoBehaviour
             piece.OnPieceLock += HandlePieceLocked;
     }
 
-private async void HandlePieceLocked(object sender, EventArgs e)
-{
-    if (IsCompleted()) return;
-    if (handlingProblem) return; // prevent double processing
-
-    handlingProblem = true;
-
-    string answer = problems[currentProblemIndex].answer;
-    bool problemCompleted = true;
-
-    // check all characters for the current problem
-    foreach (char c in answer)
+    private async void HandlePieceLocked(object sender, EventArgs e)
     {
-        if (!Board.Instance.CheckNumberPatter(c))
+        if (IsCompleted() || handlingProblem) return;
+
+        handlingProblem = true;
+
+        string answer = problems[currentProblemIndex].answer;
+        bool problemCompleted = true;
+
+        foreach (char c in answer)
         {
-            problemCompleted = false;
-            break;
+            if (!Board.Instance.CheckNumberPatter(c))
+            {
+                problemCompleted = false;
+                break;
+            }
         }
+
+        if (problemCompleted)
+        {
+            Score.gotIt++;
+            await UniTask.Delay(TimeSpan.FromSeconds(0.5f));
+
+            Board.Instance.ClearAllPieces();
+
+            currentProblemIndex++;
+
+            if (IsCompleted())
+            {
+                FinishGame();
+            }
+            else
+            {
+                ShowCurrentProblem();
+                state = State.WaitingToStart;
+            }
+        }
+
+        handlingProblem = false;
     }
-
-    if (problemCompleted)
-    {
-        Score.gotIt++;
-        await UniTask.Delay(TimeSpan.FromSeconds(0.5f));
-
-        // clear the board for the next problem
-        Board.Instance.ClearAllPieces();
-
-        // move to next problem
-        currentProblemIndex++;
-
-        if (IsCompleted())
-        {
-            FinishGame(); // only after last problem
-        }
-        else
-        {
-            ShowCurrentProblem();
-            state = State.WaitingToStart; // or a “CountdownToStart” state if needed
-        }
-    }
-
-    handlingProblem = false;
-}
-
 
     private async void FinishGame()
     {
         if (Score.GetScore() > 0)
         {
-            int? current_stage_id = await api.UpdateChildProgress(MapDataManager.Instance.Data.childId,MapDataManager.Instance.Data.order,Score.GetScore());
+            int? current_stage_id = await api.UpdateChildProgress(
+                MapDataManager.Instance.Data.childId,
+                MapDataManager.Instance.Data.order,
+                Score.GetScore()
+            );
+
             if (current_stage_id.HasValue)
             {
-                MapDataManager.Instance.Data.current_stage_id[1] = current_stage_id.Value;
-                Debug.Log("Updated current_stage_id: " + MapDataManager.Instance.Data.current_stage_id[MapDataManager.Instance.Data.order-1]);
+                // Ensure array is long enough
+                if (MapDataManager.Instance.Data.current_stage_id == null)
+                {
+                    MapDataManager.Instance.Data.current_stage_id = new int[MapDataManager.Instance.Data.order];
+                }
+                else if (MapDataManager.Instance.Data.current_stage_id.Length < MapDataManager.Instance.Data.order)
+                {
+                    Array.Resize(ref MapDataManager.Instance.Data.current_stage_id, MapDataManager.Instance.Data.order);
+                }
+
+                int index = MapDataManager.Instance.Data.order - 1;
+                if (index >= 0 && index < MapDataManager.Instance.Data.current_stage_id.Length)
+                {
+                    MapDataManager.Instance.Data.current_stage_id[index] = current_stage_id.Value;
+                    Debug.Log("Updated current_stage_id: " + MapDataManager.Instance.Data.current_stage_id[index]);
+                }
+                else
+                {
+                    Debug.LogWarning("[TetrisGameManager] Order index out of bounds.");
+                }
             }
-            Debug.Log(MapDataManager.Instance.Data.current_stage_id[MapDataManager.Instance.Data.order-1]);
+
             if (winCanvas != null) winCanvas.SetActive(true);
             state = State.GameWin;
         }

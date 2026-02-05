@@ -9,6 +9,7 @@ using Cysharp.Threading.Tasks;
 public class QuizManager : MonoBehaviour
 {
     public static QuizManager Instance { get; private set; }
+
     [Header("UI References")]
     [SerializeField] private TMP_Text questionText;
     [SerializeField] private TMP_Text[] answerTexts;
@@ -21,13 +22,16 @@ public class QuizManager : MonoBehaviour
     [SerializeField] private int gameModeId = 3; // The ID of the quiz game mode to load
     [SerializeField] private GameObject winCanvas;
     [SerializeField] private GameObject loseCanvas;
+
     private List<QuizQuestionData> questions;
     private int currentQuestionIndex = 0;
     private int score = 0;
     private float maxGamePlayingTime = 10f;
     private float gamePlayingTimer;
+
     public ApiGetLoader api = new ApiGetLoader();
     public event EventHandler onStateChanged;
+
     private enum State
     {
         WaitingToStart,
@@ -36,11 +40,14 @@ public class QuizManager : MonoBehaviour
         GameWin,
         GameLose,
     }
+
     private State state;
+
     private void Awake()
     {
         Instance = this;
     }
+
     private void Start()
     {
         resultPanel.SetActive(false);
@@ -48,6 +55,7 @@ public class QuizManager : MonoBehaviour
         ShowCurrentQuestion();
         state = State.WaitingToStart;
     }
+
     private void Update()
     {
         switch (state)
@@ -57,6 +65,7 @@ public class QuizManager : MonoBehaviour
                 gamePlayingTimer = maxGamePlayingTime;
                 onStateChanged?.Invoke(this, EventArgs.Empty);
                 break;
+
             case State.CountdownTimer:
                 Debug.Log("quiz counting");
                 gamePlayingTimer -= Time.deltaTime;
@@ -66,20 +75,24 @@ public class QuizManager : MonoBehaviour
                     onStateChanged?.Invoke(this, EventArgs.Empty);
                 }
                 break;
+
             case State.answerQuestion:
                 state = State.WaitingToStart;
                 onStateChanged?.Invoke(this, EventArgs.Empty);
                 break;
+
             case State.GameWin:
                 winCanvas.SetActive(true);
                 onStateChanged?.Invoke(this, EventArgs.Empty);
                 break;
+
             case State.GameLose:
                 loseCanvas.SetActive(true);
                 onStateChanged?.Invoke(this, EventArgs.Empty);
                 break;
         }
     }
+
     private void LoadQuizData()
     {
         if (!QuizGameData.quizGames.ContainsKey(gameModeId) || QuizGameData.quizGames[gameModeId].Count == 0)
@@ -101,7 +114,7 @@ public class QuizManager : MonoBehaviour
             EndQuiz();
             return;
         }
-        
+
         var currentQuestion = questions[currentQuestionIndex];
 
         questionText.text = currentQuestion.question;
@@ -153,19 +166,31 @@ public class QuizManager : MonoBehaviour
         quizPanel.SetActive(false);
         resultPanel.SetActive(true);
         scoreText.text = $"{score}/{questions.Count}";
+
         await UniTask.Delay(1500);
         resultPanel.SetActive(false);
+
         int totalQuestions = questions.Count;
-        float average = totalQuestions / 2f;
-        if (Score.GetScore() > 0)  // assuming you implemented GetScore() as discussed
+
+        // Calculate player's score percentage
+        float percentage = (float)score / totalQuestions;
+
+        // Win threshold (50% correct)
+        if (percentage >= 0.5f)
         {
-            int? current_stage_id = await api.UpdateChildProgress(MapDataManager.Instance.Data.childId, MapDataManager.Instance.Data.order, Score.GetScore());
+            int? current_stage_id = await api.UpdateChildProgress(
+                MapDataManager.Instance.Data.childId,
+                MapDataManager.Instance.Data.order,
+                Score.GetScore()
+            );
+
             if (current_stage_id.HasValue)
             {
                 MapDataManager.Instance.Data.current_stage_id[2] = current_stage_id.Value;
-                Debug.Log("Updated current_stage_id: " + MapDataManager.Instance.Data.current_stage_id[MapDataManager.Instance.Data.order-1]);
+                Debug.Log("Updated current_stage_id: " +
+                    MapDataManager.Instance.Data.current_stage_id[MapDataManager.Instance.Data.order - 1]);
             }
-            Debug.Log(MapDataManager.Instance.Data.current_stage_id[MapDataManager.Instance.Data.order-1]);
+
             state = State.GameWin;
             onStateChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -202,6 +227,7 @@ public class QuizManager : MonoBehaviour
         Debug.LogWarning($"Invalid hex color: {hex}");
         return Color.white;
     }
+
     public float GetGamePlayingTimerNormalize()
     {
         return 1 - (gamePlayingTimer / maxGamePlayingTime);

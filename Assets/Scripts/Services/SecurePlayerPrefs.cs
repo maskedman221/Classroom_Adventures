@@ -40,6 +40,14 @@ public static class SecurePlayerPrefs
             return Convert.ToBase64String(encryptedBytes);
         }
     }
+        public static void DeleteEncryptedKey(string keyName)
+    {
+        if (PlayerPrefs.HasKey(keyName))
+        {
+            PlayerPrefs.DeleteKey(keyName);
+            PlayerPrefs.Save();
+        }
+    }
 
     private static string DecryptString(string encryptedText)
     {

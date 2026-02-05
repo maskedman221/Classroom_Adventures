@@ -4184,7 +4184,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bba080d1df13c6e438cca71b578a8cd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 0}
+  player: {fileID: 1980439222}
   childId: 4
   mapLevels: {fileID: 891968799}
   exitButton: {fileID: 1904588471}
@@ -5422,7 +5422,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5619349669527341728, guid: 888200a748ec1a64ab08631235e45609, type: 3}
       propertyPath: splinePoint
-      value: 0.2
+      value: 0.17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

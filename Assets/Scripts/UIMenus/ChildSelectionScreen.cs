@@ -11,11 +11,13 @@ public class ChildSelectionScreen : MonoBehaviour
     [SerializeField] private Canvas selectionChildScreen;
     [SerializeField] private Canvas createChildAccountScreen;
     [SerializeField] private Button createButton;
+    [SerializeField] private Button logoutButton;
     private ApiGetLoader api = new ApiGetLoader();
 
     private async UniTaskVoid Start()
     {
         createButton.onClick.AddListener(() => goToCreateChildAccount());
+        logoutButton.onClick.AddListener(() => OnLogoutButtonPressed());
         var response = await LoadingManager.Instance.RunWithLoading(() => api.GetChildren());
         if (response != null && response.data != null)
         {
@@ -75,4 +77,8 @@ public class ChildSelectionScreen : MonoBehaviour
     //     MapDataManager.Instance.Data.playerName = 
     //     SceneManager.LoadScene(3); 
     // }
+    public void OnLogoutButtonPressed()
+{
+    MapDataManager.Instance.Logout();
+}
 }

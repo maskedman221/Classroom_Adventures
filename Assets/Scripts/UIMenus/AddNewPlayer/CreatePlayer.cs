@@ -7,14 +7,18 @@ public class CreatePlayer : MonoBehaviour
     [SerializeField] private TMP_InputField playerName;
     [SerializeField] private TMP_Dropdown gradeDropdown;
     [SerializeField] private Button createButton;
+    [SerializeField] private Button backButton;
     [SerializeField] private Button[] avatarButtons;
     [SerializeField] private Image[] avatarImages;
+    [SerializeField] private GameObject selectionCanvas;
+    [SerializeField] private GameObject createCanvas;
     private int selectedAvatar = 0;
     private string selectedDropdown = "Kindergarten";
     private int childId = 1;
     void Start()
     {
         createButton.onClick.AddListener(() => Handlecreation().Forget());
+        backButton.onClick.AddListener(() => Back());
         gradeDropdown.onValueChanged.AddListener(OnDropdownValueChanged);
         for (int i = 0; i < avatarButtons.Length; i++)
         {
@@ -22,6 +26,11 @@ public class CreatePlayer : MonoBehaviour
             avatarButtons[i].onClick.AddListener(() => OnAvatarSelected(index));
         }
         
+    }
+    private void Back()
+    {
+        selectionCanvas.SetActive(true);
+        createCanvas.SetActive(false);
     }
     private async UniTaskVoid Handlecreation()
     {   
@@ -37,6 +46,8 @@ public class CreatePlayer : MonoBehaviour
         string fileName = $"avatar_{childId}.png";
         ImageSaver.SaveSpriteToFile(selectedSprite, fileName);
         bool isCreatePlayer = await ApiRegistration.Instance.CreatePlayerAccount(name, grade_level);
+        selectionCanvas.SetActive(true);
+        createCanvas.SetActive(false);
     }
     private void OnDropdownValueChanged(int index)
     {
